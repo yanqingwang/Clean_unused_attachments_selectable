@@ -152,12 +152,14 @@ const getUsedAttachmentPaths = async (app: App): Promise<Set<string>> => {
             // Canvas 文件
             try {
                 const fileText = await app.vault.cachedRead(file);
-                const canvasData = JSON.parse(fileText);
+                const canvasData = JSON.parse(fileText) as {
+                    nodes?: Array<{ type?: string; file?: string; text?: string }>;
+                };
                 if (canvasData.nodes && canvasData.nodes.length > 0) {
                     for (const node of canvasData.nodes) {
-                        if (node.type === 'file' && node.file) {
+                        if (node.type === 'file' && typeof node.file === 'string') {
                             usedPaths.add(node.file);
-                        } else if (node.type === 'text' && node.text) {
+                        } else if (node.type === 'text' && typeof node.text === 'string') {
                             const linkMatches = await getAllLinkMatchesInFile(file, app, node.text);
                             for (const match of linkMatches) {
                                 usedPaths.add(match.linkText);
@@ -192,10 +194,10 @@ export const deleteFilesInTheList = async (
     for (const file of files) {
         try {
             if (deleteOption === '.trash') {
-                await app.vault.trash(file, false);
+                await app.fileManager.trashFile(file);
                 logs += i18n.logObsidianTrash(file.path) + '\n';
             } else if (deleteOption === 'system-trash') {
-                await app.vault.trash(file, true);
+                await app.fileManager.trashFile(file);
                 logs += i18n.logSystemTrash(file.path) + '\n';
             } else if (deleteOption === 'permanent') {
                 await app.vault.delete(file);
@@ -203,7 +205,7 @@ export const deleteFilesInTheList = async (
             }
             deletedCount++;
         } catch (e) {
-            logs += i18n.logDeleteFailed(file.path, String(e)) + '\n';
+            logs += i18n.logDeleteFailed(file.path, e instanceof Error ? e.message : String(e)) + '\n';
         }
     }
 

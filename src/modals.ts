@@ -1,11 +1,10 @@
-import { App, Modal, Notice, Setting, TFile } from 'obsidian';
+import { App, Modal, Notice, TFile } from 'obsidian';
 import ClearUnusedAttachments from './main';
 import { formatBytes } from './util';
 import { t } from './i18n';
 
 /**
  * 清理范围选择对话框
- * 用户可以选择按文件夹或按文件类型筛选，确认后开始扫描
  */
 export class CleanSelectionModal extends Modal {
     plugin: ClearUnusedAttachments;
@@ -25,8 +24,7 @@ export class CleanSelectionModal extends Modal {
 
         contentEl.createEl('h2', { text: i18n.modalSelectScope, cls: 'modal-title' });
 
-        const hintEl = contentEl.createEl('div', { cls: 'clear-unused-hint' });
-        hintEl.setText(i18n.modalSelectScopeHint);
+        contentEl.createEl('div', { cls: 'clear-unused-hint', text: i18n.modalSelectScopeHint });
 
         // 文件夹输入
         const folderSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
@@ -48,8 +46,7 @@ export class CleanSelectionModal extends Modal {
         const quickSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
         quickSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelQuickSelect });
 
-        const quickBtnRow = quickSection.createEl('div', { cls: 'clear-unused-button-row' });
-        quickBtnRow.style.justifyContent = 'flex-start';
+        const quickBtnRow = quickSection.createEl('div', { cls: 'clear-unused-button-row clear-unused-button-row-start' });
 
         const allImagesBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonAllImages });
         allImagesBtn.addEventListener('click', () => {
@@ -72,7 +69,7 @@ export class CleanSelectionModal extends Modal {
             folderInput.value = '';
         });
 
-        // 按钮
+        // 底部按钮
         const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
 
         const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonCancel });
@@ -86,8 +83,8 @@ export class CleanSelectionModal extends Modal {
                 .filter((f) => f.length > 0);
             const fileTypes = typeInput.value
                 .split(',')
-                .map((t) => t.trim().toLowerCase().replace(/^\./, ''))
-                .filter((t) => t.length > 0);
+                .map((tp) => tp.trim().toLowerCase().replace(/^\./, ''))
+                .filter((tp) => tp.length > 0);
 
             this.close();
             this.onSubmit(folders, fileTypes);
@@ -95,14 +92,12 @@ export class CleanSelectionModal extends Modal {
     }
 
     onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
+        this.contentEl.empty();
     }
 }
 
 /**
  * 未使用文件确认列表对话框
- * 扫描完成后显示，用户勾选要删除的文件后确认删除
  */
 export class ConfirmDeleteModal extends Modal {
     plugin: ClearUnusedAttachments;
@@ -181,8 +176,7 @@ export class ConfirmDeleteModal extends Modal {
     }
 
     onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
+        this.contentEl.empty();
         this.checkboxes = [];
     }
 }
@@ -205,7 +199,8 @@ export class LogsModal extends Modal {
         contentEl.createEl('h2', { text: t().modalLogsTitle, cls: 'modal-title' });
 
         const logsEl = contentEl.createEl('div', { cls: 'clear-unused-logs' });
-        logsEl.innerHTML = this.logs;
+        // 用 innerText 替代 innerHTML，避免 XSS
+        logsEl.innerText = this.logs;
 
         const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
         const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: t().buttonClose });
@@ -213,7 +208,6 @@ export class LogsModal extends Modal {
     }
 
     onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
+        this.contentEl.empty();
     }
 }

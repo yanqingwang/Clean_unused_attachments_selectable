@@ -13,9 +13,7 @@ export interface LinkMatch {
 
 /**
  * 扫描文件中的所有内部链接（wiki 和 markdown 格式）
- * @param mdFile 要扫描的文件
- * @param app Obsidian App
- * @param fileText 可选，非 md 文件时提供文本内容
+ * 不使用 lookbehind 正则（iOS <16.4 不支持）
  */
 export const getAllLinkMatchesInFile = async (mdFile: TFile, app: App, fileText?: string): Promise<LinkMatch[]> => {
     const linkMatches: LinkMatch[] = [];
@@ -24,95 +22,79 @@ export const getAllLinkMatchesInFile = async (mdFile: TFile, app: App, fileText?
     }
 
     // --> WikiLinks: [[...]]
-    const wikiRegex = /\[\[.*?\]\]/g;
-    const wikiMatches = fileText.match(wikiRegex);
-    if (wikiMatches) {
-        const fileRegex = /(?<=\[\[).*?(?=(\]|\|))/;
-        for (const wikiMatch of wikiMatches) {
-            if (matchIsWikiTransclusion(wikiMatch)) {
-                const fileName = getTransclusionFileName(wikiMatch);
+    const wikiRegex = /\[\[([^\]]+)\]\]/g;
+    let wikiMatch: RegExpExecArray | null;
+    while ((wikiMatch = wikiRegex.exec(fileText)) !== null) {
+        const fullMatch = wikiMatch[0];
+        const inner = wikiMatch[1];
+        // 去掉别名部分 |alias
+        const pipeIdx = inner.indexOf('|');
+        const target = pipeIdx >= 0 ? inner.substring(0, pipeIdx) : inner;
+
+        if (target.startsWith('http')) continue;
+
+        // 检查是否为 transclusion（包含 #）
+        const hashIdx = target.indexOf('#');
+        if (hashIdx >= 0) {
+            const fileName = target.substring(0, hashIdx);
+            if (fileName !== '') {
                 const file = app.metadataCache.getFirstLinkpathDest(fileName, mdFile.path);
-                if (fileName !== '') {
-                    linkMatches.push({
-                        type: 'wikiTransclusion',
-                        match: wikiMatch,
-                        linkText: file ? file.path : fileName,
-                        sourceFilePath: mdFile.path,
-                    });
-                    continue;
-                }
-            }
-            const fileMatch = wikiMatch.match(fileRegex);
-            if (fileMatch) {
-                if (fileMatch[0].startsWith('http')) continue;
-                const file = app.metadataCache.getFirstLinkpathDest(fileMatch[0], mdFile.path);
                 linkMatches.push({
-                    type: 'wiki',
-                    match: wikiMatch,
-                    linkText: file ? file.path : fileMatch[0],
+                    type: 'wikiTransclusion',
+                    match: fullMatch,
+                    linkText: file ? file.path : fileName,
                     sourceFilePath: mdFile.path,
                 });
+                continue;
             }
+        }
+
+        if (target !== '') {
+            const file = app.metadataCache.getFirstLinkpathDest(target, mdFile.path);
+            linkMatches.push({
+                type: 'wiki',
+                match: fullMatch,
+                linkText: file ? file.path : target,
+                sourceFilePath: mdFile.path,
+            });
         }
     }
 
     // --> Markdown Links: [...](...)
-    const markdownRegex = /\[(^$|.*?)\]\((.*?)\)/g;
-    const markdownMatches = fileText.match(markdownRegex);
-    if (markdownMatches) {
-        const fileRegex = /(?<=\().*(?=\))/;
-        for (const markdownMatch of markdownMatches) {
-            if (matchIsMdTransclusion(markdownMatch)) {
-                const fileName = getTransclusionFileName(markdownMatch);
+    const markdownRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
+    let mdMatch: RegExpExecArray | null;
+    while ((mdMatch = markdownRegex.exec(fileText)) !== null) {
+        const fullMatch = mdMatch[0];
+        const target = mdMatch[2];
+
+        if (target.startsWith('http')) continue;
+
+        // 检查是否为 transclusion（包含 #）
+        const hashIdx = target.indexOf('#');
+        if (hashIdx >= 0) {
+            const fileName = target.substring(0, hashIdx);
+            if (fileName !== '') {
                 const file = app.metadataCache.getFirstLinkpathDest(fileName, mdFile.path);
-                if (fileName !== '') {
-                    linkMatches.push({
-                        type: 'mdTransclusion',
-                        match: markdownMatch,
-                        linkText: file ? file.path : fileName,
-                        sourceFilePath: mdFile.path,
-                    });
-                    continue;
-                }
-            }
-            const fileMatch = markdownMatch.match(fileRegex);
-            if (fileMatch) {
-                if (fileMatch[0].startsWith('http')) continue;
-                const file = app.metadataCache.getFirstLinkpathDest(fileMatch[0], mdFile.path);
                 linkMatches.push({
-                    type: 'markdown',
-                    match: markdownMatch,
-                    linkText: file ? file.path : fileMatch[0],
+                    type: 'mdTransclusion',
+                    match: fullMatch,
+                    linkText: file ? file.path : fileName,
                     sourceFilePath: mdFile.path,
                 });
+                continue;
             }
         }
+
+        if (target !== '') {
+            const file = app.metadataCache.getFirstLinkpathDest(target, mdFile.path);
+            linkMatches.push({
+                type: 'markdown',
+                match: fullMatch,
+                linkText: file ? file.path : target,
+                sourceFilePath: mdFile.path,
+            });
+        }
     }
+
     return linkMatches;
-};
-
-/* ---------- HELPERS ---------- */
-
-const wikiTransclusionRegex = /\[\[(.*?)#.*?\]\]/;
-const wikiTransclusionFileNameRegex = /(?<=\[\[)(.*)(?=#)/;
-
-const mdTransclusionRegex = /\[.*?]\((.*?)#.*?\)/;
-const mdTransclusionFileNameRegex = /(?<=\]\()(.*)(?=#)/;
-
-const matchIsWikiTransclusion = (match: string): boolean => {
-    return wikiTransclusionRegex.test(match);
-};
-
-const matchIsMdTransclusion = (match: string): boolean => {
-    return mdTransclusionRegex.test(match);
-};
-
-const getTransclusionFileName = (match: string): string => {
-    const isWiki = wikiTransclusionRegex.test(match);
-    const isMd = mdTransclusionRegex.test(match);
-    if (isWiki || isMd) {
-        const fileNameMatch = match.match(isWiki ? wikiTransclusionFileNameRegex : mdTransclusionFileNameRegex);
-        if (fileNameMatch) return fileNameMatch[0];
-    }
-    return '';
 };

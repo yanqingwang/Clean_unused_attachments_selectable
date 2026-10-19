@@ -9,8 +9,6 @@ export default class ClearUnusedAttachments extends Plugin {
     ribbonIconEl: HTMLElement | undefined;
 
     async onload() {
-        console.log('Clear Unused Attachments plugin loaded');
-
         await this.loadSettings();
 
         // 初始化语言
@@ -21,21 +19,27 @@ export default class ClearUnusedAttachments extends Plugin {
 
         // 命令
         this.addCommand({
-            id: 'clear-unused-attachments',
+            id: 'clear-attachments',
             name: t().commandClearAttachments,
-            callback: () => this.startCleanup(),
+            callback: () => {
+                this.startCleanup();
+            },
         });
 
         this.addCommand({
-            id: 'clear-unused-images',
+            id: 'clear-images',
             name: t().commandClearImages,
-            callback: () => this.startCleanup(['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp']),
+            callback: () => {
+                this.startCleanup(['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp']);
+            },
         });
 
         this.addCommand({
             id: 'cleanup-trash-expired',
             name: t().commandCleanupTrash,
-            callback: () => this.runTrashCleanup(),
+            callback: () => {
+                void this.runTrashCleanup();
+            },
         });
 
         // Ribbon 图标
@@ -43,7 +47,7 @@ export default class ClearUnusedAttachments extends Plugin {
     }
 
     onunload() {
-        console.log('Clear Unused Attachments plugin unloaded');
+        // cleanup
     }
 
     async loadSettings() {
@@ -65,16 +69,11 @@ export default class ClearUnusedAttachments extends Plugin {
 
     /**
      * 开始清理流程
-     * 1. 弹出选择框让用户选择文件夹和文件类型
-     * 2. 扫描未使用的附件
-     * 3. 显示确认列表
-     * 4. 执行删除
-     * 5. 如果启用，清理 .trash 过期文件
      */
     startCleanup(defaultFileTypes?: string[]) {
         new CleanSelectionModal(this.app, this, (folders, fileTypes) => {
             const effectiveFileTypes = defaultFileTypes || fileTypes;
-            this.scanAndConfirm(folders, effectiveFileTypes);
+            void this.scanAndConfirm(folders, effectiveFileTypes);
         }).open();
     }
 
@@ -106,7 +105,7 @@ export default class ClearUnusedAttachments extends Plugin {
 
             // 显示确认列表
             new ConfirmDeleteModal(this.app, this, unusedFiles, (selectedFiles) => {
-                this.executeDelete(selectedFiles);
+                void this.executeDelete(selectedFiles);
             }).open();
         } catch (e) {
             notice.hide();

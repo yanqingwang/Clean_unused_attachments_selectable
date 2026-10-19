@@ -279,8 +279,9 @@ export function setLanguage(lang: Language, app?: App) {
     if (app) {
         // 尝试获取 Obsidian 界面语言
         try {
-            const langSetting = (app.vault as any).getConfig?.('language');
-            if (langSetting) {
+            const vault = app.vault as unknown as { getConfig?: (key: string) => unknown };
+            const langSetting = vault.getConfig?.('language');
+            if (typeof langSetting === 'string') {
                 obsidianLanguage = langSetting.toLowerCase();
             }
         } catch {

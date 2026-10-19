@@ -52,6 +52,11 @@
     margin-top: 16px;
 }
 
+.clear-unused-button-row-start {
+    justify-content: flex-start;
+    margin-top: 8px;
+}
+
 .clear-unused-button {
     padding: 6px 16px;
     border-radius: 4px;
