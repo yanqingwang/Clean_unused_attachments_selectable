@@ -80,7 +80,8 @@ export default class ClearUnusedAttachments extends Plugin {
                 folders,
                 fileTypes,
                 this.settings.excludedFolders,
-                this.settings.excludeSubfolders
+                this.settings.excludeSubfolders,
+                this.settings.excludedFileTypes
             );
 
             notice.hide();

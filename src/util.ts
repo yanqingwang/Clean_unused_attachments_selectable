@@ -17,16 +17,18 @@ const imageRegex = /.*(jpe?g|png|gif|svg|bmp|webp|ico|tiff?)/i;
  * @param fileTypes 目标文件类型列表，空数组表示全部
  * @param excludedFolders 排除的文件夹列表
  * @param excludeSubfolders 是否排除子文件夹
+ * @param excludedFileTypes 排除的文件类型列表
  */
 export const getUnusedAttachments = async (
     app: App,
     folders: string[],
     fileTypes: string[],
     excludedFolders: string,
-    excludeSubfolders: boolean
+    excludeSubfolders: boolean,
+    excludedFileTypes: string
 ): Promise<TFile[]> => {
     // 1. 获取所有附件（非 md/canvas 文件）
-    const allAttachments = getAttachmentsInVault(app, folders, fileTypes);
+    const allAttachments = getAttachmentsInVault(app, folders, fileTypes, excludedFileTypes);
 
     // 2. 获取所有被引用的附件路径
     const usedAttachmentPaths = await getUsedAttachmentPaths(app);
@@ -48,13 +50,26 @@ export const getUnusedAttachments = async (
 /**
  * 获取仓库中符合条件的附件文件
  */
-const getAttachmentsInVault = (app: App, folders: string[], fileTypes: string[]): TFile[] => {
+const getAttachmentsInVault = (app: App, folders: string[], fileTypes: string[], excludedFileTypes: string): TFile[] => {
     const allFiles = app.vault.getFiles();
     const attachments: TFile[] = [];
+
+    // 解析排除的文件类型
+    const excludedTypes = new Set(
+        excludedFileTypes
+            .split(',')
+            .map((t) => t.trim().toLowerCase().replace(/^\./, ''))
+            .filter((t) => t.length > 0)
+    );
 
     for (const file of allFiles) {
         // 跳过 md 和 canvas
         if (file.extension === 'md' || file.extension === 'canvas') {
+            continue;
+        }
+
+        // 排除的文件类型直接跳过
+        if (excludedTypes.has(file.extension.toLowerCase())) {
             continue;
         }
 

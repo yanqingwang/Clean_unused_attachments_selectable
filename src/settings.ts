@@ -1,6 +1,16 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import ClearUnusedAttachments from './main';
 
+/** Obsidian 支持的标准附件类型 */
+export const OBSIDIAN_STANDARD_EXTENSIONS = [
+    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'webp', 'ico',
+    'mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac',
+    'mp4', 'webm', 'mov', 'avi', 'mkv', 'mpg', 'mpeg',
+    'pdf',
+    'zip', 'rar', '7z', 'tar', 'gz',
+    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv',
+];
+
 export interface ClearUnusedAttachmentsSettings {
     // 预设清理范围（仅作为默认值，清理时仍会弹出选择框）
     defaultFolders: string;
@@ -8,6 +18,8 @@ export interface ClearUnusedAttachmentsSettings {
     // 排除设置
     excludedFolders: string;
     excludeSubfolders: boolean;
+    // 排除的文件类型
+    excludedFileTypes: string;
     // 删除选项
     deleteOption: string;
     // 其他
@@ -20,6 +32,7 @@ export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
     defaultFileTypes: '',
     excludedFolders: '',
     excludeSubfolders: false,
+    excludedFileTypes: 'png, jpg, jpeg, gif, svg, bmp, webp',
     deleteOption: '.trash',
     showLogs: true,
     ribbonIcon: false,
@@ -93,6 +106,30 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
                     this.plugin.settings.excludeSubfolders = value;
                     this.plugin.saveSettings();
                 })
+            );
+
+        new Setting(containerEl)
+            .setName('排除文件类型')
+            .setDesc('这些文件类型不会被清理。默认已排除图片类型（可能被 CSS 或其他方式引用）。多个用逗号分隔。')
+            .addTextArea((text) => {
+                text
+                    .setPlaceholder('例如: png, jpg, pdf, zip')
+                    .setValue(this.plugin.settings.excludedFileTypes)
+                    .onChange((value) => {
+                        this.plugin.settings.excludedFileTypes = value;
+                        this.plugin.saveSettings();
+                    });
+                text.inputEl.rows = 3;
+            })
+            .addExtraButton((btn) =>
+                btn
+                    .setIcon('list-plus')
+                    .setTooltip('填入所有 Obsidian 标准类型')
+                    .onClick(() => {
+                        this.plugin.settings.excludedFileTypes = OBSIDIAN_STANDARD_EXTENSIONS.join(', ');
+                        this.plugin.saveSettings();
+                        this.display();
+                    })
             );
 
         // --- 删除选项 ---
