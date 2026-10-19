@@ -1,7 +1,7 @@
 import { Notice, Plugin, TFile } from 'obsidian';
 import { ClearUnusedAttachmentsSettingTab, ClearUnusedAttachmentsSettings, DEFAULT_SETTINGS } from './settings';
 import { CleanSelectionModal, ConfirmDeleteModal, LogsModal } from './modals';
-import { getUnusedAttachments, deleteFilesInTheList } from './util';
+import { getUnusedAttachments, deleteFilesInTheList, cleanupTrashFolder } from './util';
 import { setLanguage, t } from './i18n';
 
 export default class ClearUnusedAttachments extends Plugin {
@@ -30,6 +30,12 @@ export default class ClearUnusedAttachments extends Plugin {
             id: 'clear-unused-images',
             name: t().commandClearImages,
             callback: () => this.startCleanup(['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp']),
+        });
+
+        this.addCommand({
+            id: 'cleanup-trash-expired',
+            name: t().commandCleanupTrash,
+            callback: () => this.runTrashCleanup(),
         });
 
         // Ribbon 图标
@@ -63,10 +69,10 @@ export default class ClearUnusedAttachments extends Plugin {
      * 2. 扫描未使用的附件
      * 3. 显示确认列表
      * 4. 执行删除
+     * 5. 如果启用，清理 .trash 过期文件
      */
     startCleanup(defaultFileTypes?: string[]) {
         new CleanSelectionModal(this.app, this, (folders, fileTypes) => {
-            // 如果命令指定了文件类型，使用命令的；否则用用户输入的
             const effectiveFileTypes = defaultFileTypes || fileTypes;
             this.scanAndConfirm(folders, effectiveFileTypes);
         }).open();
@@ -93,6 +99,8 @@ export default class ClearUnusedAttachments extends Plugin {
 
             if (unusedFiles.length === 0) {
                 new Notice(i18n.noticeNoUnusedFiles);
+                // 即使没有未使用附件，也执行 .trash 清理
+                await this.maybeRunTrashCleanup('');
                 return;
             }
 
@@ -113,20 +121,62 @@ export default class ClearUnusedAttachments extends Plugin {
     async executeDelete(files: TFile[]) {
         const i18n = t();
         const notice = new Notice(i18n.noticeDeleting(files.length), 0);
+        let combinedLogs = '';
 
         try {
             const { deletedCount, logs } = await deleteFilesInTheList(files, this, this.app);
+            combinedLogs = logs;
             notice.hide();
 
             new Notice(i18n.noticeDeleteSuccess(deletedCount));
+        } catch (e) {
+            notice.hide();
+            new Notice(i18n.noticeDeleteFailed(String(e)));
+            console.error('Delete error:', e);
+            return;
+        }
 
+        // 执行 .trash 清理并合并日志
+        combinedLogs = await this.maybeRunTrashCleanup(combinedLogs);
+
+        if (this.settings.showLogs && combinedLogs) {
+            new LogsModal(this.app, combinedLogs).open();
+        }
+    }
+
+    /**
+     * 如果启用了 .trash 清理，则执行；返回合并后的日志
+     */
+    async maybeRunTrashCleanup(existingLogs: string): Promise<string> {
+        if (!this.settings.trashCleanupEnabled) {
+            return existingLogs;
+        }
+        try {
+            const { logs } = await cleanupTrashFolder(this.app, this.settings.trashCleanupDays);
+            return existingLogs ? existingLogs + '\n\n' + logs : logs;
+        } catch (e) {
+            console.error('Trash cleanup error:', e);
+            return existingLogs;
+        }
+    }
+
+    /**
+     * 单独执行 .trash 清理命令
+     */
+    async runTrashCleanup() {
+        const i18n = t();
+        const notice = new Notice(i18n.noticeTrashCleanupStart, 0);
+        try {
+            const { deletedCount, logs } = await cleanupTrashFolder(this.app, this.settings.trashCleanupDays);
+            notice.hide();
+            new Notice(i18n.noticeTrashCleanupDone(deletedCount));
             if (this.settings.showLogs) {
                 new LogsModal(this.app, logs).open();
             }
         } catch (e) {
             notice.hide();
             new Notice(i18n.noticeDeleteFailed(String(e)));
-            console.error('Delete error:', e);
+            console.error('Trash cleanup error:', e);
         }
     }
 }

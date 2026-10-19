@@ -28,6 +28,9 @@ export interface ClearUnusedAttachmentsSettings {
     ribbonIcon: boolean;
     // 语言
     language: Language;
+    // .trash 自动清理
+    trashCleanupEnabled: boolean;
+    trashCleanupDays: number;
 }
 
 export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
@@ -40,6 +43,8 @@ export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
     showLogs: true,
     ribbonIcon: false,
     language: 'auto',
+    trashCleanupEnabled: true,
+    trashCleanupDays: 60,
 };
 
 export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
@@ -172,6 +177,35 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
                     this.plugin.saveSettings();
                 });
             });
+
+        // --- .trash 自动清理 ---
+        containerEl.createEl('h3', { text: t().sectionTrashCleanup });
+
+        new Setting(containerEl)
+            .setName(t().settingTrashCleanupEnabled)
+            .setDesc(t().settingTrashCleanupEnabledDesc)
+            .addToggle((toggle) =>
+                toggle.setValue(this.plugin.settings.trashCleanupEnabled).onChange((value) => {
+                    this.plugin.settings.trashCleanupEnabled = value;
+                    this.plugin.saveSettings();
+                })
+            );
+
+        new Setting(containerEl)
+            .setName(t().settingTrashCleanupDays)
+            .setDesc(t().settingTrashCleanupDaysDesc)
+            .addText((text) =>
+                text
+                    .setPlaceholder('60')
+                    .setValue(String(this.plugin.settings.trashCleanupDays))
+                    .onChange((value) => {
+                        const days = parseInt(value, 10);
+                        if (!isNaN(days) && days > 0) {
+                            this.plugin.settings.trashCleanupDays = days;
+                            this.plugin.saveSettings();
+                        }
+                    })
+            );
 
         // --- 其他 ---
         containerEl.createEl('h3', { text: t().sectionOthers });

@@ -256,6 +256,55 @@ const pathIsAnImage = (path: string): boolean => {
     return imageRegex.test(path);
 };
 
+/* ------------------ .trash Cleanup ------------------ */
+
+/**
+ * 清理 .trash 文件夹中超过指定天数的文件
+ * @returns 删除的文件数量和日志
+ */
+export const cleanupTrashFolder = async (
+    app: App,
+    daysThreshold: number
+): Promise<{ deletedCount: number; logs: string }> => {
+    const i18n = t();
+    const thresholdMs = daysThreshold * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    let deletedCount = 0;
+    let logs = i18n.logTrashCleanupStart(getFormattedDate(), daysThreshold) + '\n';
+
+    // 收集 .trash 下的所有文件（包括子文件夹）
+    const allFiles = app.vault.getFiles();
+    const trashFiles: { file: TFile; daysOld: number }[] = [];
+
+    for (const file of allFiles) {
+        // 检查文件是否在 .trash 文件夹中
+        const pathParts = file.path.split('/');
+        if (pathParts[0] !== '.trash') continue;
+
+        const ageMs = now - file.stat.mtime;
+        const daysOld = Math.floor(ageMs / (24 * 60 * 60 * 1000));
+
+        if (ageMs > thresholdMs) {
+            trashFiles.push({ file, daysOld });
+        }
+    }
+
+    // 永久删除过期文件
+    for (const { file, daysOld } of trashFiles) {
+        try {
+            await app.vault.delete(file);
+            logs += i18n.logTrashCleanupItem(file.path, daysOld) + '\n';
+            deletedCount++;
+        } catch (e) {
+            console.error('Failed to delete trash file:', file.path, e);
+        }
+    }
+
+    logs += i18n.logTrashCleanupDone(deletedCount);
+    return { deletedCount, logs };
+};
+
 /**
  * 格式化文件大小
  */

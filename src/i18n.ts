@@ -33,6 +33,19 @@ export interface I18nTexts {
     settingLanguageDesc: string;
     optionAuto: string;
 
+    // .trash Cleanup
+    sectionTrashCleanup: string;
+    settingTrashCleanupEnabled: string;
+    settingTrashCleanupEnabledDesc: string;
+    settingTrashCleanupDays: string;
+    settingTrashCleanupDaysDesc: string;
+    commandCleanupTrash: string;
+    noticeTrashCleanupStart: string;
+    noticeTrashCleanupDone: (count: number) => string;
+    logTrashCleanupStart: (date: string, days: number) => string;
+    logTrashCleanupItem: (path: string, daysOld: number) => string;
+    logTrashCleanupDone: (count: number) => string;
+
     // Commands
     commandClearAttachments: string;
     commandClearImages: string;
@@ -114,6 +127,18 @@ const zh: I18nTexts = {
     settingLanguageDesc: '选择插件界面显示语言。',
     optionAuto: '跟随 Obsidian',
 
+    sectionTrashCleanup: '.trash 自动清理',
+    settingTrashCleanupEnabled: '启用 .trash 自动清理',
+    settingTrashCleanupEnabledDesc: '在执行清理操作时，同时永久删除 .trash 文件夹中超过指定天数的文件。',
+    settingTrashCleanupDays: '清理天数阈值',
+    settingTrashCleanupDaysDesc: '删除 .trash 中超过此天数的文件（默认 60 天，可设置为 30 等）。',
+    commandCleanupTrash: '立即清理 .trash 过期文件',
+    noticeTrashCleanupStart: '正在清理 .trash 过期文件...',
+    noticeTrashCleanupDone: (count) => `已从 .trash 永久删除 ${count} 个过期文件。`,
+    logTrashCleanupStart: (date, days) => `[+] ${date}: 开始清理 .trash 中超过 ${days} 天的文件...`,
+    logTrashCleanupItem: (path, daysOld) => `[+] 永久删除（${daysOld} 天前）: ${path}`,
+    logTrashCleanupDone: (count) => `[+] .trash 清理完成，共删除 ${count} 个文件`,
+
     commandClearAttachments: '清理未使用的附件',
     commandClearImages: '清理未使用的图片',
 
@@ -188,6 +213,18 @@ const en: I18nTexts = {
     settingLanguage: 'Interface Language',
     settingLanguageDesc: 'Choose the plugin interface language.',
     optionAuto: 'Follow Obsidian',
+
+    sectionTrashCleanup: '.trash Auto-Cleanup',
+    settingTrashCleanupEnabled: 'Enable .trash Auto-Cleanup',
+    settingTrashCleanupEnabledDesc: 'When running cleanup, also permanently delete files in the .trash folder older than the specified days.',
+    settingTrashCleanupDays: 'Days Threshold',
+    settingTrashCleanupDaysDesc: 'Delete files in .trash older than this many days (default 60, e.g., set to 30).',
+    commandCleanupTrash: 'Clean Expired .trash Files Now',
+    noticeTrashCleanupStart: 'Cleaning expired .trash files...',
+    noticeTrashCleanupDone: (count) => `Permanently deleted ${count} expired file(s) from .trash.`,
+    logTrashCleanupStart: (date, days) => `[+] ${date}: Cleaning .trash files older than ${days} days...`,
+    logTrashCleanupItem: (path, daysOld) => `[+] Permanently deleted (${daysOld} days old): ${path}`,
+    logTrashCleanupDone: (count) => `[+] .trash cleanup done, deleted ${count} file(s)`,
 
     commandClearAttachments: 'Clear Unused Attachments',
     commandClearImages: 'Clear Unused Images',
