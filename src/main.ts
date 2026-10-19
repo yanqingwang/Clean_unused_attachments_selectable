@@ -2,6 +2,7 @@ import { Notice, Plugin, TFile } from 'obsidian';
 import { ClearUnusedAttachmentsSettingTab, ClearUnusedAttachmentsSettings, DEFAULT_SETTINGS } from './settings';
 import { CleanSelectionModal, ConfirmDeleteModal, LogsModal } from './modals';
 import { getUnusedAttachments, deleteFilesInTheList } from './util';
+import { setLanguage, t } from './i18n';
 
 export default class ClearUnusedAttachments extends Plugin {
     settings: ClearUnusedAttachmentsSettings;
@@ -12,19 +13,22 @@ export default class ClearUnusedAttachments extends Plugin {
 
         await this.loadSettings();
 
+        // 初始化语言
+        setLanguage(this.settings.language, this.app);
+
         // 设置页
         this.addSettingTab(new ClearUnusedAttachmentsSettingTab(this.app, this));
 
         // 命令
         this.addCommand({
             id: 'clear-unused-attachments',
-            name: '清理未使用的附件',
+            name: t().commandClearAttachments,
             callback: () => this.startCleanup(),
         });
 
         this.addCommand({
             id: 'clear-unused-images',
-            name: '清理未使用的图片',
+            name: t().commandClearImages,
             callback: () => this.startCleanup(['png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'webp']),
         });
 
@@ -47,7 +51,7 @@ export default class ClearUnusedAttachments extends Plugin {
     refreshRibbonIcon() {
         this.ribbonIconEl?.remove();
         if (this.settings.ribbonIcon) {
-            this.ribbonIconEl = this.addRibbonIcon('image-file', '清理未使用附件', () => {
+            this.ribbonIconEl = this.addRibbonIcon('image-file', t().commandClearAttachments, () => {
                 this.startCleanup();
             });
         }
@@ -72,7 +76,8 @@ export default class ClearUnusedAttachments extends Plugin {
      * 扫描未使用附件并显示确认列表
      */
     async scanAndConfirm(folders: string[], fileTypes: string[]) {
-        const notice = new Notice('正在扫描未使用的附件...', 0);
+        const i18n = t();
+        const notice = new Notice(i18n.noticeScanning, 0);
 
         try {
             const unusedFiles = await getUnusedAttachments(
@@ -87,7 +92,7 @@ export default class ClearUnusedAttachments extends Plugin {
             notice.hide();
 
             if (unusedFiles.length === 0) {
-                new Notice('没有找到未使用的附件。');
+                new Notice(i18n.noticeNoUnusedFiles);
                 return;
             }
 
@@ -97,7 +102,7 @@ export default class ClearUnusedAttachments extends Plugin {
             }).open();
         } catch (e) {
             notice.hide();
-            new Notice(`扫描失败: ${e}`);
+            new Notice(i18n.noticeScanFailed(String(e)));
             console.error('Scan error:', e);
         }
     }
@@ -106,20 +111,21 @@ export default class ClearUnusedAttachments extends Plugin {
      * 执行删除
      */
     async executeDelete(files: TFile[]) {
-        const notice = new Notice(`正在删除 ${files.length} 个文件...`, 0);
+        const i18n = t();
+        const notice = new Notice(i18n.noticeDeleting(files.length), 0);
 
         try {
             const { deletedCount, logs } = await deleteFilesInTheList(files, this, this.app);
             notice.hide();
 
-            new Notice(`成功删除 ${deletedCount} 个文件。`);
+            new Notice(i18n.noticeDeleteSuccess(deletedCount));
 
             if (this.settings.showLogs) {
                 new LogsModal(this.app, logs).open();
             }
         } catch (e) {
             notice.hide();
-            new Notice(`删除失败: ${e}`);
+            new Notice(i18n.noticeDeleteFailed(String(e)));
             console.error('Delete error:', e);
         }
     }

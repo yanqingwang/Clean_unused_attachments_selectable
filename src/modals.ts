@@ -1,6 +1,7 @@
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import ClearUnusedAttachments from './main';
-import { getUnusedAttachments, deleteFilesInTheList, formatBytes } from './util';
+import { formatBytes } from './util';
+import { t } from './i18n';
 
 /**
  * 清理范围选择对话框
@@ -20,50 +21,52 @@ export class CleanSelectionModal extends Modal {
         const { contentEl } = this;
         contentEl.addClass('clear-unused-modal');
 
-        contentEl.createEl('h2', { text: '选择清理范围', cls: 'modal-title' });
+        const i18n = t();
+
+        contentEl.createEl('h2', { text: i18n.modalSelectScope, cls: 'modal-title' });
 
         const hintEl = contentEl.createEl('div', { cls: 'clear-unused-hint' });
-        hintEl.setText('提示：以下默认值来自设置，您可以在本次清理前修改。留空表示不限制。');
+        hintEl.setText(i18n.modalSelectScopeHint);
 
         // 文件夹输入
         const folderSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
-        folderSection.createEl('div', { cls: 'clear-unused-section-title', text: '目标文件夹' });
-        folderSection.createEl('div', { cls: 'clear-unused-hint', text: '多个路径用逗号分隔，例如: Attachments, Assets/Images' });
+        folderSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelTargetFolders });
+        folderSection.createEl('div', { cls: 'clear-unused-hint', text: i18n.labelTargetFoldersHint });
         const folderInput = folderSection.createEl('textarea', { cls: 'clear-unused-textarea' });
         folderInput.value = this.plugin.settings.defaultFolders;
-        folderInput.placeholder = '留空表示扫描整个仓库';
+        folderInput.placeholder = i18n.placeholderFolders;
 
         // 文件类型输入
         const typeSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
-        typeSection.createEl('div', { cls: 'clear-unused-section-title', text: '目标文件类型' });
-        typeSection.createEl('div', { cls: 'clear-unused-hint', text: '多个扩展名用逗号分隔，例如: png, jpg, pdf, zip' });
+        typeSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelTargetFileTypes });
+        typeSection.createEl('div', { cls: 'clear-unused-hint', text: i18n.labelTargetFileTypesHint });
         const typeInput = typeSection.createEl('input', { cls: 'clear-unused-input', type: 'text' });
         typeInput.value = this.plugin.settings.defaultFileTypes;
-        typeInput.placeholder = '留空表示所有附件类型';
+        typeInput.placeholder = i18n.placeholderFileTypes;
 
         // 快捷选择按钮
         const quickSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
-        quickSection.createEl('div', { cls: 'clear-unused-section-title', text: '快捷选择' });
+        quickSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelQuickSelect });
 
         const quickBtnRow = quickSection.createEl('div', { cls: 'clear-unused-button-row' });
         quickBtnRow.style.justifyContent = 'flex-start';
 
-        const allImagesBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: '所有图片' });
+        const allImagesBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonAllImages });
         allImagesBtn.addEventListener('click', () => {
             typeInput.value = 'png, jpg, jpeg, gif, svg, bmp, webp';
         });
 
-        const allDocsBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: '所有文档' });
+        const allDocsBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonAllDocuments });
         allDocsBtn.addEventListener('click', () => {
             typeInput.value = 'pdf, doc, docx, xls, xlsx, ppt, pptx, txt';
         });
 
-        const allMediaBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: '所有媒体' });
+        const allMediaBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonAllMedia });
         allMediaBtn.addEventListener('click', () => {
             typeInput.value = 'mp3, mp4, wav, avi, mov, mkv, flac';
         });
 
-        const clearBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: '清空' });
+        const clearBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonClear });
         clearBtn.addEventListener('click', () => {
             typeInput.value = '';
             folderInput.value = '';
@@ -72,10 +75,10 @@ export class CleanSelectionModal extends Modal {
         // 按钮
         const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
 
-        const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: '取消' });
+        const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonCancel });
         cancelBtn.addEventListener('click', () => this.close());
 
-        const confirmBtn = btnRow.createEl('button', { cls: 'clear-unused-button clear-unused-button-primary', text: '开始扫描' });
+        const confirmBtn = btnRow.createEl('button', { cls: 'clear-unused-button clear-unused-button-primary', text: i18n.buttonStartScan });
         confirmBtn.addEventListener('click', () => {
             const folders = folderInput.value
                 .split(',')
@@ -118,12 +121,14 @@ export class ConfirmDeleteModal extends Modal {
         const { contentEl } = this;
         contentEl.addClass('clear-unused-modal');
 
-        contentEl.createEl('h2', { text: `发现 ${this.files.length} 个未使用的附件`, cls: 'modal-title' });
+        const i18n = t();
+
+        contentEl.createEl('h2', { text: i18n.modalConfirmTitle(this.files.length), cls: 'modal-title' });
 
         if (this.files.length === 0) {
-            contentEl.createEl('p', { text: '没有找到未使用的附件。' });
+            contentEl.createEl('p', { text: i18n.modalNoFiles });
             const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
-            const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: '关闭' });
+            const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonClose });
             closeBtn.addEventListener('click', () => this.close());
             return;
         }
@@ -133,13 +138,13 @@ export class ConfirmDeleteModal extends Modal {
         const selectAllLabel = header.createEl('label');
         const selectAllCheckbox = selectAllLabel.createEl('input', { type: 'checkbox' });
         selectAllCheckbox.checked = true;
-        selectAllLabel.createSpan({ text: ' 全选' });
+        selectAllLabel.createSpan({ text: i18n.labelSelectAll });
         selectAllCheckbox.addEventListener('change', () => {
             const checked = selectAllCheckbox.checked;
             this.checkboxes.forEach((cb) => (cb.checked = checked));
         });
 
-        header.createEl('span', { cls: 'file-list-count', text: `${this.files.length} 个文件` });
+        header.createEl('span', { cls: 'file-list-count', text: i18n.labelFileCount(this.files.length) });
 
         // 文件列表
         const listContainer = contentEl.createEl('div', { cls: 'file-list-container' });
@@ -154,20 +159,20 @@ export class ConfirmDeleteModal extends Modal {
             const pathSpan = item.createEl('span', { cls: 'file-list-path', text: file.path });
             pathSpan.title = file.path;
 
-            const sizeSpan = item.createEl('span', { cls: 'file-list-size', text: formatBytes(file.stat.size) });
+            item.createEl('span', { cls: 'file-list-size', text: formatBytes(file.stat.size) });
         }
 
         // 按钮
         const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
 
-        const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: '取消' });
+        const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonCancel });
         cancelBtn.addEventListener('click', () => this.close());
 
-        const deleteBtn = btnRow.createEl('button', { cls: 'clear-unused-button clear-unused-button-danger', text: '删除选中' });
+        const deleteBtn = btnRow.createEl('button', { cls: 'clear-unused-button clear-unused-button-danger', text: i18n.buttonDeleteSelected });
         deleteBtn.addEventListener('click', () => {
             const selected = this.files.filter((_, i) => this.checkboxes[i].checked);
             if (selected.length === 0) {
-                new Notice('未选择任何文件。');
+                new Notice(i18n.noticeNoFilesSelected);
                 return;
             }
             this.close();
@@ -197,13 +202,13 @@ export class LogsModal extends Modal {
         const { contentEl } = this;
         contentEl.addClass('clear-unused-modal');
 
-        contentEl.createEl('h2', { text: '清理日志', cls: 'modal-title' });
+        contentEl.createEl('h2', { text: t().modalLogsTitle, cls: 'modal-title' });
 
         const logsEl = contentEl.createEl('div', { cls: 'clear-unused-logs' });
         logsEl.innerHTML = this.logs;
 
         const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
-        const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: '关闭' });
+        const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: t().buttonClose });
         closeBtn.addEventListener('click', () => this.close());
     }
 

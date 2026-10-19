@@ -1,6 +1,7 @@
 import { App, TFile } from 'obsidian';
 import ClearUnusedAttachments from './main';
 import { getAllLinkMatchesInFile, LinkMatch } from './linkDetector';
+import { t } from './i18n';
 
 /* ------------------ Constants ------------------ */
 
@@ -184,29 +185,30 @@ export const deleteFilesInTheList = async (
     app: App
 ): Promise<{ deletedCount: number; logs: string }> => {
     const deleteOption = plugin.settings.deleteOption;
+    const i18n = t();
     let deletedCount = 0;
-    let logs = `[+] ${getFormattedDate()}: 开始清理...\n`;
+    let logs = i18n.logStart(getFormattedDate()) + '\n';
 
     for (const file of files) {
         try {
             if (deleteOption === '.trash') {
                 await app.vault.trash(file, false);
-                logs += `[+] 移到 Obsidian 回收站: ${file.path}\n`;
+                logs += i18n.logObsidianTrash(file.path) + '\n';
             } else if (deleteOption === 'system-trash') {
                 await app.vault.trash(file, true);
-                logs += `[+] 移到系统回收站: ${file.path}\n`;
+                logs += i18n.logSystemTrash(file.path) + '\n';
             } else if (deleteOption === 'permanent') {
                 await app.vault.delete(file);
-                logs += `[+] 永久删除: ${file.path}\n`;
+                logs += i18n.logPermanent(file.path) + '\n';
             }
             deletedCount++;
         } catch (e) {
-            logs += `[!] 删除失败 ${file.path}: ${e}\n`;
+            logs += i18n.logDeleteFailed(file.path, String(e)) + '\n';
         }
     }
 
-    logs += `[+] 共处理 ${deletedCount} 个文件\n`;
-    logs += `[+] ${getFormattedDate()}: 清理完成`;
+    logs += i18n.logTotalProcessed(deletedCount) + '\n';
+    logs += i18n.logComplete(getFormattedDate());
 
     return { deletedCount, logs };
 };

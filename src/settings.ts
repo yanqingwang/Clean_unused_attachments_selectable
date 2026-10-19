@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import ClearUnusedAttachments from './main';
+import { t, setLanguage, Language } from './i18n';
 
 /** Obsidian 支持的标准附件类型 */
 export const OBSIDIAN_STANDARD_EXTENSIONS = [
@@ -25,6 +26,8 @@ export interface ClearUnusedAttachmentsSettings {
     // 其他
     showLogs: boolean;
     ribbonIcon: boolean;
+    // 语言
+    language: Language;
 }
 
 export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
@@ -36,6 +39,7 @@ export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
     deleteOption: '.trash',
     showLogs: true,
     ribbonIcon: false,
+    language: 'auto',
 };
 
 export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
@@ -51,14 +55,34 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
         containerEl.empty();
         containerEl.addClass('clear-unused-settings');
 
-        containerEl.createEl('h2', { text: 'Clear Unused Attachments Settings' });
+        // 确保语言已同步
+        setLanguage(this.plugin.settings.language, this.app);
+
+        containerEl.createEl('h2', { text: t().settingsTitle });
+
+        // --- 语言选择 ---
+        new Setting(containerEl)
+            .setName(t().settingLanguage)
+            .setDesc(t().settingLanguageDesc)
+            .addDropdown((dropdown) => {
+                dropdown.addOption('auto', t().optionAuto);
+                dropdown.addOption('zh', '中文');
+                dropdown.addOption('en', 'English');
+                dropdown.setValue(this.plugin.settings.language);
+                dropdown.onChange((value) => {
+                    this.plugin.settings.language = value as Language;
+                    this.plugin.saveSettings();
+                    setLanguage(value as Language, this.app);
+                    this.display(); // 刷新设置页以应用新语言
+                });
+            });
 
         // --- 默认清理范围 ---
-        containerEl.createEl('h3', { text: '默认清理范围（清理时仍会弹出确认）' });
+        containerEl.createEl('h3', { text: t().sectionDefaultScope });
 
         new Setting(containerEl)
-            .setName('默认目标文件夹')
-            .setDesc('设置默认要清理的文件夹路径，多个用逗号分隔。留空表示整个仓库。清理时仍会弹出选择框。')
+            .setName(t().settingDefaultFolders)
+            .setDesc(t().settingDefaultFoldersDesc)
             .addTextArea((text) =>
                 text
                     .setPlaceholder('例如: Attachments, Assets/Images')
@@ -70,8 +94,8 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('默认目标文件类型')
-            .setDesc('设置默认要清理的文件扩展名，多个用逗号分隔。留空表示所有附件类型。清理时仍会弹出选择框。')
+            .setName(t().settingDefaultFileTypes)
+            .setDesc(t().settingDefaultFileTypesDesc)
             .addText((text) =>
                 text
                     .setPlaceholder('例如: png, jpg, pdf, zip')
@@ -83,11 +107,11 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             );
 
         // --- 排除设置 ---
-        containerEl.createEl('h3', { text: '排除设置' });
+        containerEl.createEl('h3', { text: t().sectionExclusions });
 
         new Setting(containerEl)
-            .setName('排除文件夹路径')
-            .setDesc('要排除的文件夹完整路径，多个用逗号分隔。这些文件夹中的附件永远不会被清理。')
+            .setName(t().settingExcludedFolders)
+            .setDesc(t().settingExcludedFoldersDesc)
             .addTextArea((text) =>
                 text
                     .setPlaceholder('例如: Templates/Assets, Archive/Old')
@@ -99,8 +123,8 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('排除子文件夹')
-            .setDesc('开启后，上述文件夹的所有子文件夹也会被排除。')
+            .setName(t().settingExcludeSubfolders)
+            .setDesc(t().settingExcludeSubfoldersDesc)
             .addToggle((toggle) =>
                 toggle.setValue(this.plugin.settings.excludeSubfolders).onChange((value) => {
                     this.plugin.settings.excludeSubfolders = value;
@@ -109,8 +133,8 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('排除文件类型')
-            .setDesc('这些文件类型不会被清理。默认已排除图片类型（可能被 CSS 或其他方式引用）。多个用逗号分隔。')
+            .setName(t().settingExcludedFileTypes)
+            .setDesc(t().settingExcludedFileTypesDesc)
             .addTextArea((text) => {
                 text
                     .setPlaceholder('例如: png, jpg, pdf, zip')
@@ -124,7 +148,7 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             .addExtraButton((btn) =>
                 btn
                     .setIcon('list-plus')
-                    .setTooltip('填入所有 Obsidian 标准类型')
+                    .setTooltip(t().buttonFillStandardTypes)
                     .onClick(() => {
                         this.plugin.settings.excludedFileTypes = OBSIDIAN_STANDARD_EXTENSIONS.join(', ');
                         this.plugin.saveSettings();
@@ -133,15 +157,15 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             );
 
         // --- 删除选项 ---
-        containerEl.createEl('h3', { text: '删除选项' });
+        containerEl.createEl('h3', { text: t().sectionDeleteOptions });
 
         new Setting(containerEl)
-            .setName('删除方式')
-            .setDesc('选择附件被删除后的去向')
+            .setName(t().settingDeleteOption)
+            .setDesc(t().settingDeleteOptionDesc)
             .addDropdown((dropdown) => {
-                dropdown.addOption('permanent', '永久删除');
-                dropdown.addOption('.trash', '移到 Obsidian 回收站');
-                dropdown.addOption('system-trash', '移到系统回收站');
+                dropdown.addOption('permanent', t().optionPermanent);
+                dropdown.addOption('.trash', t().optionObsidianTrash);
+                dropdown.addOption('system-trash', t().optionSystemTrash);
                 dropdown.setValue(this.plugin.settings.deleteOption);
                 dropdown.onChange((option) => {
                     this.plugin.settings.deleteOption = option;
@@ -150,11 +174,11 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             });
 
         // --- 其他 ---
-        containerEl.createEl('h3', { text: '其他' });
+        containerEl.createEl('h3', { text: t().sectionOthers });
 
         new Setting(containerEl)
-            .setName('显示删除日志')
-            .setDesc('删除完成后显示操作日志弹窗。')
+            .setName(t().settingShowLogs)
+            .setDesc(t().settingShowLogsDesc)
             .addToggle((toggle) =>
                 toggle.setValue(this.plugin.settings.showLogs).onChange((value) => {
                     this.plugin.settings.showLogs = value;
@@ -163,8 +187,8 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName('功能区图标')
-            .setDesc('在左侧功能区显示清理图标。')
+            .setName(t().settingRibbonIcon)
+            .setDesc(t().settingRibbonIconDesc)
             .addToggle((toggle) =>
                 toggle.setValue(this.plugin.settings.ribbonIcon).onChange((value) => {
                     this.plugin.settings.ribbonIcon = value;
