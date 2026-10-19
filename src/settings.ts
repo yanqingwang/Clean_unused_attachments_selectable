@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
     defaultFileTypes: '',
     excludedFolders: '',
     excludeSubfolders: false,
-    excludedFileTypes: 'png, jpg, jpeg, gif, svg, bmp, webp',
+    excludedFileTypes: 'png, jpg, jpeg, gif, svg, bmp, webp, html, md',
     deleteOption: '.trash',
     showLogs: true,
     ribbonIcon: false,
