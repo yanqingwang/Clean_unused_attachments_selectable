@@ -1,0 +1,168 @@
+/* Clear Unused Attachments - Selection Modal Styles */
+
+.clear-unused-modal .modal-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.clear-unused-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+}
+
+.clear-unused-section-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-normal);
+}
+
+.clear-unused-hint {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.clear-unused-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.clear-unused-textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 6px 8px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-family: inherit;
+    resize: vertical;
+}
+
+.clear-unused-button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.clear-unused-button {
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.clear-unused-button:hover {
+    background: var(--background-secondary);
+}
+
+.clear-unused-button-primary {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.clear-unused-button-primary:hover {
+    background: var(--interactive-accent-hover);
+}
+
+.clear-unused-button-danger {
+    background: var(--background-modifier-error);
+    color: var(--text-on-accent);
+    border-color: var(--background-modifier-error);
+}
+
+.clear-unused-button-danger:hover {
+    background: var(--background-modifier-error-hover);
+}
+
+/* File list modal */
+.file-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 8px;
+    margin: 12px 0;
+}
+
+.file-list-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    font-family: var(--font-monospace);
+    font-size: 0.9em;
+}
+
+.file-list-item:last-child {
+    border-bottom: none;
+}
+
+.file-list-item:hover {
+    background: var(--background-secondary);
+}
+
+.file-list-checkbox {
+    margin-right: 8px;
+}
+
+.file-list-path {
+    flex: 1;
+    word-break: break-all;
+}
+
+.file-list-size {
+    color: var(--text-muted);
+    font-size: 0.85em;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.file-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.file-list-count {
+    font-weight: 600;
+    color: var(--text-accent);
+}
+
+/* Logs modal */
+.clear-unused-logs {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    font-family: var(--font-monospace);
+    font-size: 0.85em;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Settings tab */
+.clear-unused-settings .setting-item {
+    padding: 12px 0;
+}
+
+.clear-unused-settings .setting-item-description {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
