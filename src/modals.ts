@@ -24,29 +24,29 @@ export class CleanSelectionModal extends Modal {
 
         contentEl.createEl('h2', { text: i18n.modalSelectScope, cls: 'modal-title' });
 
-        contentEl.createEl('div', { cls: 'clear-unused-hint', text: i18n.modalSelectScopeHint });
+        contentEl.createDiv({ cls: 'clear-unused-hint', text: i18n.modalSelectScopeHint });
 
         // 文件夹输入
-        const folderSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
-        folderSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelTargetFolders });
-        folderSection.createEl('div', { cls: 'clear-unused-hint', text: i18n.labelTargetFoldersHint });
+        const folderSection = contentEl.createDiv({ cls: 'clear-unused-section' });
+        folderSection.createDiv({ cls: 'clear-unused-section-title', text: i18n.labelTargetFolders });
+        folderSection.createDiv({ cls: 'clear-unused-hint', text: i18n.labelTargetFoldersHint });
         const folderInput = folderSection.createEl('textarea', { cls: 'clear-unused-textarea' });
         folderInput.value = this.plugin.settings.defaultFolders;
         folderInput.placeholder = i18n.placeholderFolders;
 
         // 文件类型输入
-        const typeSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
-        typeSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelTargetFileTypes });
-        typeSection.createEl('div', { cls: 'clear-unused-hint', text: i18n.labelTargetFileTypesHint });
+        const typeSection = contentEl.createDiv({ cls: 'clear-unused-section' });
+        typeSection.createDiv({ cls: 'clear-unused-section-title', text: i18n.labelTargetFileTypes });
+        typeSection.createDiv({ cls: 'clear-unused-hint', text: i18n.labelTargetFileTypesHint });
         const typeInput = typeSection.createEl('input', { cls: 'clear-unused-input', type: 'text' });
         typeInput.value = this.plugin.settings.defaultFileTypes;
         typeInput.placeholder = i18n.placeholderFileTypes;
 
         // 快捷选择按钮
-        const quickSection = contentEl.createEl('div', { cls: 'clear-unused-section' });
-        quickSection.createEl('div', { cls: 'clear-unused-section-title', text: i18n.labelQuickSelect });
+        const quickSection = contentEl.createDiv({ cls: 'clear-unused-section' });
+        quickSection.createDiv({ cls: 'clear-unused-section-title', text: i18n.labelQuickSelect });
 
-        const quickBtnRow = quickSection.createEl('div', { cls: 'clear-unused-button-row clear-unused-button-row-start' });
+        const quickBtnRow = quickSection.createDiv({ cls: 'clear-unused-button-row clear-unused-button-row-start' });
 
         const allImagesBtn = quickBtnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonAllImages });
         allImagesBtn.addEventListener('click', () => {
@@ -70,7 +70,7 @@ export class CleanSelectionModal extends Modal {
         });
 
         // 底部按钮
-        const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
+        const btnRow = contentEl.createDiv({ cls: 'clear-unused-button-row' });
 
         const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonCancel });
         cancelBtn.addEventListener('click', () => this.close());
@@ -122,14 +122,14 @@ export class ConfirmDeleteModal extends Modal {
 
         if (this.files.length === 0) {
             contentEl.createEl('p', { text: i18n.modalNoFiles });
-            const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
+            const btnRow = contentEl.createDiv({ cls: 'clear-unused-button-row' });
             const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonClose });
             closeBtn.addEventListener('click', () => this.close());
             return;
         }
 
         // 头部：全选/取消全选
-        const header = contentEl.createEl('div', { cls: 'file-list-header' });
+        const header = contentEl.createDiv({ cls: 'file-list-header' });
         const selectAllLabel = header.createEl('label');
         const selectAllCheckbox = selectAllLabel.createEl('input', { type: 'checkbox' });
         selectAllCheckbox.checked = true;
@@ -139,26 +139,26 @@ export class ConfirmDeleteModal extends Modal {
             this.checkboxes.forEach((cb) => (cb.checked = checked));
         });
 
-        header.createEl('span', { cls: 'file-list-count', text: i18n.labelFileCount(this.files.length) });
+        header.createSpan({ cls: 'file-list-count', text: i18n.labelFileCount(this.files.length) });
 
         // 文件列表
-        const listContainer = contentEl.createEl('div', { cls: 'file-list-container' });
+        const listContainer = contentEl.createDiv({ cls: 'file-list-container' });
 
         for (const file of this.files) {
-            const item = listContainer.createEl('div', { cls: 'file-list-item' });
+            const item = listContainer.createDiv({ cls: 'file-list-item' });
 
             const checkbox = item.createEl('input', { type: 'checkbox', cls: 'file-list-checkbox' });
             checkbox.checked = true;
             this.checkboxes.push(checkbox);
 
-            const pathSpan = item.createEl('span', { cls: 'file-list-path', text: file.path });
+            const pathSpan = item.createSpan({ cls: 'file-list-path', text: file.path });
             pathSpan.title = file.path;
 
-            item.createEl('span', { cls: 'file-list-size', text: formatBytes(file.stat.size) });
+            item.createSpan({ cls: 'file-list-size', text: formatBytes(file.stat.size) });
         }
 
         // 按钮
-        const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
+        const btnRow = contentEl.createDiv({ cls: 'clear-unused-button-row' });
 
         const cancelBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: i18n.buttonCancel });
         cancelBtn.addEventListener('click', () => this.close());
@@ -198,11 +198,11 @@ export class LogsModal extends Modal {
 
         contentEl.createEl('h2', { text: t().modalLogsTitle, cls: 'modal-title' });
 
-        const logsEl = contentEl.createEl('div', { cls: 'clear-unused-logs' });
+        const logsEl = contentEl.createDiv({ cls: 'clear-unused-logs' });
         // 用 innerText 替代 innerHTML，避免 XSS
         logsEl.innerText = this.logs;
 
-        const btnRow = contentEl.createEl('div', { cls: 'clear-unused-button-row' });
+        const btnRow = contentEl.createDiv({ cls: 'clear-unused-button-row' });
         const closeBtn = btnRow.createEl('button', { cls: 'clear-unused-button', text: t().buttonClose });
         closeBtn.addEventListener('click', () => this.close());
     }

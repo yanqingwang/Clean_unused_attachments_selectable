@@ -1,6 +1,6 @@
 {
   "name": "clear-unused-attachments",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Obsidian plugin to clear unused images and attachments with folder/type selection",
   "main": "main.js",
   "scripts": {

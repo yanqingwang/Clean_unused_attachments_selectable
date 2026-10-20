@@ -104,13 +104,12 @@ const getUsedAttachmentPaths = async (app: App): Promise<Set<string>> => {
     const usedPaths = new Set<string>();
 
     // 方法1: 使用 metadataCache.resolvedLinks
-    const resolvedLinks = app.metadataCache.resolvedLinks;
-    if (resolvedLinks) {
-        for (const [mdFile, links] of Object.entries(resolvedLinks)) {
-            for (const [filePath] of Object.entries(resolvedLinks[mdFile])) {
-                if (!filePath.endsWith('.md')) {
-                    usedPaths.add(filePath);
-                }
+    const resolvedLinks: Record<string, Record<string, number>> = app.metadataCache.resolvedLinks;
+    for (const sourcePath of Object.keys(resolvedLinks)) {
+        const links: Record<string, number> = resolvedLinks[sourcePath];
+        for (const targetPath of Object.keys(links)) {
+            if (!targetPath.endsWith('.md')) {
+                usedPaths.add(targetPath);
             }
         }
     }
@@ -121,8 +120,8 @@ const getUsedAttachmentPaths = async (app: App): Promise<Set<string>> => {
         if (file.extension === 'md') {
             // Frontmatter
             const fileCache = app.metadataCache.getFileCache(file);
-            if (fileCache?.frontmatter) {
-                const frontmatter = fileCache.frontmatter;
+            const frontmatter = fileCache?.frontmatter as Record<string, unknown> | undefined;
+            if (frontmatter) {
                 for (const key of Object.keys(frontmatter)) {
                     const value = frontmatter[key];
                     if (typeof value === 'string') {
@@ -193,15 +192,14 @@ export const deleteFilesInTheList = async (
 
     for (const file of files) {
         try {
-            if (deleteOption === '.trash') {
-                await app.fileManager.trashFile(file);
-                logs += i18n.logObsidianTrash(file.path) + '\n';
-            } else if (deleteOption === 'system-trash') {
-                await app.fileManager.trashFile(file);
-                logs += i18n.logSystemTrash(file.path) + '\n';
-            } else if (deleteOption === 'permanent') {
-                await app.vault.delete(file);
+            if (deleteOption === 'permanent') {
+                // 永久删除：使用底层适配器移除文件，不经过回收站
+                await app.vault.adapter.remove(file.path);
                 logs += i18n.logPermanent(file.path) + '\n';
+            } else {
+                // 默认：交由 Obsidian 处理，遵循用户「删除文件」偏好（.trash 或系统回收站）
+                await app.fileManager.trashFile(file);
+                logs += i18n.logTrash(file.path) + '\n';
             }
             deletedCount++;
         } catch (e) {
@@ -295,7 +293,8 @@ export const cleanupTrashFolder = async (
     // 永久删除过期文件
     for (const { file, daysOld } of trashFiles) {
         try {
-            await app.vault.delete(file);
+            // .trash 中的文件已是待回收内容，这里直接永久移除
+            await app.vault.adapter.remove(file.path);
             logs += i18n.logTrashCleanupItem(file.path, daysOld) + '\n';
             deletedCount++;
         } catch (e) {

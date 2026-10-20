@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: ClearUnusedAttachmentsSettings = {
     excludedFolders: '',
     excludeSubfolders: false,
     excludedFileTypes: 'png, jpg, jpeg, gif, svg, bmp, webp, html, md',
-    deleteOption: '.trash',
+    deleteOption: 'trash',
     showLogs: true,
     ribbonIcon: false,
     language: 'auto',
@@ -158,9 +158,8 @@ export class ClearUnusedAttachmentsSettingTab extends PluginSettingTab {
             .setName(i18n.settingDeleteOption)
             .setDesc(i18n.settingDeleteOptionDesc)
             .addDropdown((dropdown) => {
+                dropdown.addOption('trash', i18n.optionTrash);
                 dropdown.addOption('permanent', i18n.optionPermanent);
-                dropdown.addOption('.trash', i18n.optionObsidianTrash);
-                dropdown.addOption('system-trash', i18n.optionSystemTrash);
                 dropdown.setValue(this.plugin.settings.deleteOption);
                 dropdown.onChange((option) => {
                     this.plugin.settings.deleteOption = option;

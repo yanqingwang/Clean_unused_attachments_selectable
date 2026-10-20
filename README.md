@@ -115,7 +115,7 @@ npm run build
 | Exclude Subfolders | Also exclude subfolders of excluded folders | Off |
 | Excluded File Types | File types to never clean (comma-separated) | `png, jpg, jpeg, gif, svg, bmp, webp, html, md` |
 | Fill All Standard Types | Button to fill all Obsidian standard attachment types | - |
-| Delete Method | Where deleted files go (Obsidian trash / System trash / Permanent) | Obsidian trash |
+| Delete Method | Where deleted files go (Trash — follows your Obsidian delete setting / Permanent) | Trash |
 | **Enable .trash Auto-Cleanup** | Run .trash cleanup after main cleanup | **On** |
 | **Days Threshold** | Delete .trash files older than this many days | **60** |
 | Show Delete Logs | Show log modal after deletion | On |
@@ -159,7 +159,7 @@ MIT
 ### 原插件功能
 
 - 通过扫描 resolved links、frontmatter 和 Canvas 文件检测未使用的图片/附件
-- 支持删除到 Obsidian 回收站 / 系统回收站 / 永久删除
+- 支持删除到回收站（遵循 Obsidian 删除设置）/ 永久删除
 - 支持排除文件夹
 - 显示操作日志
 
@@ -204,7 +204,7 @@ MIT
    - 设置默认文件夹和文件类型
    - 排除特定文件夹（可选是否排除子文件夹）
    - 排除特定文件类型（默认：图片、html、md）
-   - 选择删除去向（Obsidian 回收站 / 系统回收站 / 永久删除）
+   - 选择删除去向（回收站（遵循 Obsidian 删除设置）/ 永久删除）
    - 开关操作日志
    - 中英文界面
    - .trash 清理天数阈值
@@ -259,7 +259,7 @@ npm run build
 | 排除子文件夹 | 同时排除上述文件夹的子文件夹 | 关闭 |
 | 排除文件类型 | 永不清理的文件类型（逗号分隔）| `png, jpg, jpeg, gif, svg, bmp, webp, html, md` |
 | 填入所有标准类型 | 一键填入所有 Obsidian 标准附件类型 | - |
-| 删除方式 | 删除文件的去向（Obsidian 回收站 / 系统回收站 / 永久删除）| Obsidian 回收站 |
+| 删除方式 | 删除文件的去向（回收站（遵循 Obsidian 删除设置）/ 永久删除）| 回收站 |
 | **启用 .trash 自动清理** | 主清理后执行 .trash 清理 | **开启** |
 | **清理天数阈值** | 删除 .trash 中超过此天数的文件 | **60** |
 | 显示删除日志 | 删除完成后显示日志弹窗 | 开启 |

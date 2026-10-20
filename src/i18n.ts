@@ -22,8 +22,7 @@ export interface I18nTexts {
     settingDeleteOption: string;
     settingDeleteOptionDesc: string;
     optionPermanent: string;
-    optionObsidianTrash: string;
-    optionSystemTrash: string;
+    optionTrash: string;
     sectionOthers: string;
     settingShowLogs: string;
     settingShowLogsDesc: string;
@@ -89,8 +88,7 @@ export interface I18nTexts {
 
     // Logs
     logStart: (date: string) => string;
-    logObsidianTrash: (path: string) => string;
-    logSystemTrash: (path: string) => string;
+    logTrash: (path: string) => string;
     logPermanent: (path: string) => string;
     logDeleteFailed: (path: string, error: string) => string;
     logTotalProcessed: (count: number) => string;
@@ -115,9 +113,8 @@ const zh: I18nTexts = {
     sectionDeleteOptions: '删除选项',
     settingDeleteOption: '删除方式',
     settingDeleteOptionDesc: '选择附件被删除后的去向',
+    optionTrash: '移到回收站（遵循 Obsidian 删除设置）',
     optionPermanent: '永久删除',
-    optionObsidianTrash: '移到 Obsidian 回收站',
-    optionSystemTrash: '移到系统回收站',
     sectionOthers: '其他',
     settingShowLogs: '显示删除日志',
     settingShowLogsDesc: '删除完成后显示操作日志弹窗。',
@@ -176,8 +173,7 @@ const zh: I18nTexts = {
     noticeDeleteFailed: (error) => `删除失败: ${error}`,
 
     logStart: (date) => `[+] ${date}: 开始清理...`,
-    logObsidianTrash: (path) => `[+] 移到 Obsidian 回收站: ${path}`,
-    logSystemTrash: (path) => `[+] 移到系统回收站: ${path}`,
+    logTrash: (path) => `[+] 已删除（按 Obsidian 删除设置）: ${path}`,
     logPermanent: (path) => `[+] 永久删除: ${path}`,
     logDeleteFailed: (path, error) => `[!] 删除失败 ${path}: ${error}`,
     logTotalProcessed: (count) => `[+] 共处理 ${count} 个文件`,
@@ -202,9 +198,8 @@ const en: I18nTexts = {
     sectionDeleteOptions: 'Delete Options',
     settingDeleteOption: 'Delete Method',
     settingDeleteOptionDesc: 'Choose where deleted attachments go',
+    optionTrash: 'Move to Trash (Follows Obsidian Delete Settings)',
     optionPermanent: 'Delete Permanently',
-    optionObsidianTrash: 'Move to Obsidian Trash',
-    optionSystemTrash: 'Move to System Trash',
     sectionOthers: 'Others',
     settingShowLogs: 'Show Delete Logs',
     settingShowLogsDesc: 'Show log modal after deletion completes.',
@@ -263,8 +258,7 @@ const en: I18nTexts = {
     noticeDeleteFailed: (error) => `Delete failed: ${error}`,
 
     logStart: (date) => `[+] ${date}: Cleanup started...`,
-    logObsidianTrash: (path) => `[+] Moved to Obsidian Trash: ${path}`,
-    logSystemTrash: (path) => `[+] Moved to System Trash: ${path}`,
+    logTrash: (path) => `[+] Deleted (per Obsidian delete settings): ${path}`,
     logPermanent: (path) => `[+] Permanently deleted: ${path}`,
     logDeleteFailed: (path, error) => `[!] Delete failed ${path}: ${error}`,
     logTotalProcessed: (count) => `[+] Total processed: ${count} file(s)`,
