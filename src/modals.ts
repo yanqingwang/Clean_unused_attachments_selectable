@@ -104,6 +104,7 @@ export class ConfirmDeleteModal extends Modal {
     files: TFile[];
     onConfirm: (selectedFiles: TFile[]) => void;
     private checkboxes: HTMLInputElement[] = [];
+    private listItems: HTMLElement[] = [];
 
     constructor(app: App, plugin: ClearUnusedAttachments, files: TFile[], onConfirm: (selectedFiles: TFile[]) => void) {
         super(app);
@@ -128,6 +129,10 @@ export class ConfirmDeleteModal extends Modal {
             return;
         }
 
+        // 收集筛选选项
+        const folders: string[] = Array.from(new Set(this.files.map((f) => f.parent?.path ?? '/'))).sort();
+        const exts: string[] = Array.from(new Set(this.files.map((f) => f.extension.toLowerCase()))).sort();
+
         // 头部：全选/取消全选
         const header = contentEl.createDiv({ cls: 'file-list-header' });
         const selectAllLabel = header.createEl('label');
@@ -135,11 +140,33 @@ export class ConfirmDeleteModal extends Modal {
         selectAllCheckbox.checked = true;
         selectAllLabel.createSpan({ text: i18n.labelSelectAll });
         selectAllCheckbox.addEventListener('change', () => {
+            // 只对当前可见项生效
             const checked = selectAllCheckbox.checked;
-            this.checkboxes.forEach((cb) => (cb.checked = checked));
+            this.listItems.forEach((item, i) => {
+                if (item.style.display !== 'none') this.checkboxes[i].checked = checked;
+            });
         });
 
         header.createSpan({ cls: 'file-list-count', text: i18n.labelFileCount(this.files.length) });
+
+        // 过滤栏
+        const filterRow = contentEl.createDiv({ cls: 'file-list-filter-row' });
+
+        const folderLabel = filterRow.createSpan({ text: i18n.labelFilterFolder });
+        folderLabel.addClass('file-list-filter-label');
+        const folderSelect = filterRow.createEl('select', { cls: 'file-list-filter-select' });
+        folderSelect.createEl('option', { text: i18n.optionFilterAllFolders, value: '__all__' });
+        for (const folder of folders) {
+            folderSelect.createEl('option', { text: folder, value: folder });
+        }
+
+        const extLabel = filterRow.createSpan({ text: i18n.labelFilterExt });
+        extLabel.addClass('file-list-filter-label');
+        const extSelect = filterRow.createEl('select', { cls: 'file-list-filter-select' });
+        extSelect.createEl('option', { text: i18n.optionFilterAllExts, value: '__all__' });
+        for (const ext of exts) {
+            extSelect.createEl('option', { text: ext, value: ext });
+        }
 
         // 文件列表
         const listContainer = contentEl.createDiv({ cls: 'file-list-container' });
@@ -155,7 +182,24 @@ export class ConfirmDeleteModal extends Modal {
             pathSpan.title = file.path;
 
             item.createSpan({ cls: 'file-list-size', text: formatBytes(file.stat.size) });
+
+            this.listItems.push(item);
         }
+
+        // 过滤函数
+        const applyFilter = () => {
+            const folderFilter = folderSelect.value;
+            const extFilter = extSelect.value;
+            this.listItems.forEach((item, i) => {
+                const file = this.files[i];
+                const fileFolder = file.parent?.path ?? '/';
+                const folderOk = folderFilter === '__all__' || fileFolder === folderFilter;
+                const extOk = extFilter === '__all__' || file.extension.toLowerCase() === extFilter;
+                item.style.display = folderOk && extOk ? '' : 'none';
+            });
+        };
+        folderSelect.addEventListener('change', applyFilter);
+        extSelect.addEventListener('change', applyFilter);
 
         // 按钮
         const btnRow = contentEl.createDiv({ cls: 'clear-unused-button-row' });
@@ -178,6 +222,7 @@ export class ConfirmDeleteModal extends Modal {
     onClose() {
         this.contentEl.empty();
         this.checkboxes = [];
+        this.listItems = [];
     }
 }
 

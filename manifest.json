@@ -1,7 +1,7 @@
 {
   "id": "clear-unused-attachments",
   "name": "Clear Unused Attachments",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "minAppVersion": "1.7.2",
   "description": "Clear unused images and attachments with folder and file type selection.",
   "author": "Yanqing Wang",

@@ -72,6 +72,10 @@ export interface I18nTexts {
     buttonClose: string;
     labelSelectAll: string;
     labelFileCount: (count: number) => string;
+    labelFilterFolder: string;
+    labelFilterExt: string;
+    optionFilterAllFolders: string;
+    optionFilterAllExts: string;
     buttonDeleteSelected: string;
     noticeNoFilesSelected: string;
 
@@ -160,6 +164,10 @@ const zh: I18nTexts = {
     buttonClose: '关闭',
     labelSelectAll: ' 全选',
     labelFileCount: (count) => `${count} 个文件`,
+    labelFilterFolder: '按文件夹过滤',
+    labelFilterExt: '按类型过滤',
+    optionFilterAllFolders: '所有文件夹',
+    optionFilterAllExts: '所有类型',
     buttonDeleteSelected: '删除选中',
     noticeNoFilesSelected: '未选择任何文件。',
 
@@ -245,6 +253,10 @@ const en: I18nTexts = {
     buttonClose: 'Close',
     labelSelectAll: ' Select All',
     labelFileCount: (count) => `${count} file(s)`,
+    labelFilterFolder: 'Filter by folder',
+    labelFilterExt: 'Filter by type',
+    optionFilterAllFolders: 'All folders',
+    optionFilterAllExts: 'All types',
     buttonDeleteSelected: 'Delete Selected',
     noticeNoFilesSelected: 'No files selected.',
 
